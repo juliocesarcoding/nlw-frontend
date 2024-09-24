@@ -1,6 +1,5 @@
 'use client'
 
-import { Plus } from 'lucide-react'
 import logo from '../assets/logo-in-orbit.svg'
 import letsStart from '../assets/lets-start.svg'
 import CreateGoalDrawer from "../components/CreateGoalDrawer";

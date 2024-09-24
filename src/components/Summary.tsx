@@ -1,125 +1,52 @@
 import React, { useState } from "react";
 import CreateGoalButton from "../ui/CreateGoalButton";
 import CreateGoalDrawer from "./CreateGoalDrawer";
-import { getDayOfTheMonth, getHourAndMinutes } from "../utils/getHourCompleted";
+import { getDayOfInNumber, getDayOfTheMonth, getHourAndMinutes, getMonth } from "../utils/getHourCompleted";
 import { getDayOfWeek } from "../utils/getDayOfweek";
 import Toast from "../ui/Toast";
 
 
-// interface Goal {
-//     id: string;
-//     title: string;
-//     completedAt: string; // assuming this is a date string in ISO format
-// }
-
-// interface GoalsPerDay {
-//     [date: string]: Goal[];
-// }
-
-// interface Progress {
-//     completed: number;
-//     total: number;
-//     goalsPerDay: GoalsPerDay;
-// }
-// interface SummaryProps {
-//     goals: Progress;
-// }
 
 export const Summary: React.FC<any> = ({ goals, pendingGoals }: any) => {
 
 
     const [isShowToast, setIsShowToast] = useState(false);
+    const firstDay = new Date(Object.keys(goals.goalsPerDay)[0]).getDate();
+    const lastDay = new Date(Object.keys(goals.goalsPerDay)[Object.keys(goals.goalsPerDay).length - 1]).getDate();
 
-    const handleSetCompletedGoal = async (goalId: string) => {
+    console.log(lastDay);
+    // const lastDay = Object.keys(goals.goalsPerDay)[0];
+    // console.log(lastDay);chrome
+
+    const handleSetCompletedGoal = (goalId: string) => {
         const body = {
             goalId: goalId
         }
-        try {
-            console.log(JSON.stringify({
-                goalId: goalId
-            }
-            ));
-            const url = "http://localhost:3333/completions";
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(body),
+
+        fetch("http://localhost:3333/completions", {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`);
+                }
+                return response.json();
             })
-            if (!response.ok) {
-                throw new Error(`Response status: ${response.status}`);
-            }
-            setIsShowToast(true);
-
-            const json = await response.json();
-            return json
-
-        } catch (error) {
-            throw new Error(`Catch error: ${error}`);
-
-        }
+            .then(json => {
+                setIsShowToast(true);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100); // delay reload by 100mse
+                return json;
+            })
+            .catch(error => {
+                throw new Error(`Catch error: ${error}`);
+            });
     }
-
-    // goals = {
-    //     "completed": 2,
-    //     "total": 13,
-    //     "goalsPerDay": {
-    //         "2024-09-23": [
-    //             {
-    //                 "id": "m21o9rmhk64jlbwj9pjs3i3p",
-    //                 "title": "Learn to code",
-    //                 "completedAt": "2024-09-23T16:16:16.091071+00:00"
-    //             },
-    //             {
-    //                 "id": "f1blkts8c9iwf8v3z7yxfhyd",
-    //                 "title": "Exercise",
-    //                 "completedAt": "2024-09-23T17:21:01.07632+00:00"
-    //             }
-    //         ]
-    //     }
-    // }
-
-    // pendingGoals = {
-    //     "pendingGoals": [
-    //         {
-    //             "id": "nyy65e73qzqa3nj4xf6n5t5g",
-    //             "title": "Learn to code",
-    //             "desiredWeeklyFrequency": 2,
-    //             "completionCount": 1
-    //         },
-    //         {
-    //             "id": "d1dhh0ihmdqtav6do8vbkh0u",
-    //             "title": "Exercise",
-    //             "desiredWeeklyFrequency": 3,
-    //             "completionCount": 0
-    //         },
-    //         {
-    //             "id": "is7we5ej912oa9pwua8za7m3",
-    //             "title": "Read",
-    //             "desiredWeeklyFrequency": 1,
-    //             "completionCount": 0
-    //         },
-    //         {
-    //             "id": "byjshxqsxfzvtp31qhd6653w",
-    //             "title": "Passar alcool em gel",
-    //             "desiredWeeklyFrequency": 1,
-    //             "completionCount": 0
-    //         },
-    //         {
-    //             "id": "d5j8sthoi0r2gvhxfhcut0gx",
-    //             "title": "Nao usar celular",
-    //             "desiredWeeklyFrequency": 3,
-    //             "completionCount": 0
-    //         },
-    //         {
-    //             "id": "cflk3t37x09afod996s7xxo5",
-    //             "title": "Nao usar celular",
-    //             "desiredWeeklyFrequency": 3,
-    //             "completionCount": 0
-    //         }
-    //     ]
-    // }
 
     const [open, setOpen] = React.useState(false)
     console.log(goals);
@@ -129,7 +56,7 @@ export const Summary: React.FC<any> = ({ goals, pendingGoals }: any) => {
             <div className=" absolute flex flex-col items-center gap-4 ">
                 <div className="flex flex-row  gap-4 align-baseline items-baseline mt-4">
                     <img src='./icon.svg' alt='logo' className='h-10 w-10' />
-                    <h1 className='text-3xl font-bold leading-none'>05 a 12 de Agosto</h1>
+                    <h1 className='text-3xl font-bold leading-none'> {lastDay}  à {firstDay} de {getMonth(Object.keys(goals.goalsPerDay)[0])}</h1>
                     <CreateGoalButton setOpen={setOpen} />
                 </div>
                 <div className="relative ">
@@ -189,8 +116,6 @@ export const Summary: React.FC<any> = ({ goals, pendingGoals }: any) => {
             <CreateGoalDrawer open={open} setOpen={setOpen} />
             <Toast show={isShowToast} setShow={setIsShowToast} />
         </div>
-
-
     );
 };
 
